@@ -1,6 +1,11 @@
+cmake_minimum_required(VERSION 3.15)
+
 project(opencv-mobile-test)
-cmake_minimum_required(VERSION 3.5)
+
 set(CMAKE_CXX_STANDARD 11)
+
+# Enable compile command to ease indexing with e.g. clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 set(OpenCV_DIR "${CMAKE_CURRENT_SOURCE_DIR}/opencv-mobile-4.12.0-luckfox-pico/lib/cmake/opencv4")
 find_package(OpenCV REQUIRED)
