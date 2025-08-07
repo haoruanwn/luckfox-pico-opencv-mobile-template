@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(rkmpi-opencv-mobile-test)
+project(rtsp-opencv-mobile)
 add_definitions(-DRV1106_1103)
 set(CMAKE_CXX_STANDARD 20)
 
