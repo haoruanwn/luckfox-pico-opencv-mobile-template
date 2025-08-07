@@ -15,6 +15,10 @@ message(STATUS "Debug OpenCV_LIBS = ${OpenCV_LIBS}")
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+# 设置 RPATH，让可执行文件在运行时去 /oem/usr/lib 目录寻找 .so 文件
+set(CMAKE_INSTALL_RPATH "/oem/usr/lib")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
 add_executable(${PROJECT_NAME} main.cpp luckfox_mpi.cpp)
 
 # # 1. 添加编译选项，将函数和数据放入独立段

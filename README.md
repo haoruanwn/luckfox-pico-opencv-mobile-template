@@ -1,6 +1,8 @@
+## 一、操作指南
 ### 获取opencv-mobile预编译包
+获取4.10.0版本的适用于luckfox-pico的预编译包
 ```bash
-./setup.sh
+./common/setup.sh
 ```
 ### 使用命令行编译
 进入具体项目路径
@@ -11,3 +13,16 @@ cmake --preset Debug
 # 使用预设进行构建
 cmake --build --preset Debug
 ```
+
+### 使用scp传输文件
+设置文件名和开发板ip地址
+```bash
+scp opencv-mobile-test root@192.168.31.91:/root
+```
+### 开发板
+- luckfox-pico-max
+- luckfox-pico-ultra-w
+
+## 二、引用与致谢
+- [nihui/opencv-mobile](https://github.com/nihui/opencv-mobile)
+- [LuckfoxTECH/luckfox_pico_rkmpi_example.git](https://github.com/LuckfoxTECH/luckfox_pico_rkmpi_example.git)
