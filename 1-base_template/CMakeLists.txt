@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-set(OpenCV_DIR "../opencv-mobile-4.12.0-luckfox-pico/lib/cmake/opencv4")
+set(OpenCV_DIR "../common/opencv-mobile-4.12.0-luckfox-pico/lib/cmake/opencv4")
 find_package(OpenCV REQUIRED)
 
 
