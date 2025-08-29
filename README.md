@@ -1,4 +1,16 @@
+# 简介
+
+基于opencv-mobile和Luckfox-pico开发板，提供一些功能验证或者工程模板
+
+| 序号 | 名称                       | 描述                       | 备注                                                         |
+| :--: | :------------------------- | -------------------------- | ------------------------------------------------------------ |
+|  1   | base_template              | 捕获9张图片并进行处理      | 取自[luckfox wiki](https://wiki.luckfox.com/zh/Luckfox-Pico/Luckfox-Pico-RV1106/Luckfox-Pico-Ultra-W/Luckfox-Pico-opencv-mobile) |
+|  2   | rtsp_opencv_mobile         | rtsp推流                   | 取自[幸狐提供的例程](https://github.com/LuckfoxTECH/luckfox_pico_rkmpi_example.git) |
+|  3   | rtsp_opencv_mobile_capture | rtsp推流+帧率标注          | 取自[幸狐提供的例程](https://github.com/LuckfoxTECH/luckfox_pico_rkmpi_example.git) |
+|  4   | fb_show                    | 捕获视频实时显示在fb设备上 | 默认分辨率为720x720                                          |
+
 ## 一、操作指南
+
 ### 获取opencv-mobile预编译包
 获取4.10.0版本的适用于luckfox-pico的预编译包
 ```bash
