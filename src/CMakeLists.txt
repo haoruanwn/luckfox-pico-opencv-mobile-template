@@ -3,17 +3,25 @@
 # ========================================
 
 set(RMG_SOURCES
-    MediaFrame.cpp
-    SystemManager.cpp
-    VideoCapture.cpp
+    Frame.cpp
+    nodes/CameraNode.cpp
+    sys/IspDevice.cpp
+    sys/MpiSystem.cpp
+    sys/ViChannel.cpp
 )
 
 set(RMG_HEADERS
     rmg.hpp
-    MediaFrame.hpp
-    MediaModule.hpp
-    SystemManager.hpp
-    VideoCapture.hpp
+    Frame.hpp
+    nodes/CameraNode.hpp
+    runtime/Error.hpp
+    runtime/Node.hpp
+    runtime/NodeState.hpp
+    runtime/NodeStats.hpp
+    runtime/Result.hpp
+    sys/IspDevice.hpp
+    sys/MpiSystem.hpp
+    sys/ViChannel.hpp
 )
 
 # 创建静态库

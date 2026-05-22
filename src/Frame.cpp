@@ -1,31 +1,17 @@
-/**
- * @file MediaFrame.cpp
- * @brief 媒体帧抽象 - 实现文件
- *
- * @author 好软，好温暖
- * @date 2026-01-29
- */
+#include "Frame.hpp"
 
-#include "MediaFrame.hpp"
+#include <utility>
 
 #include <spdlog/spdlog.h>
 
 namespace rmg {
-
-    // ============================================================================
-    // YuvFrame 实现
-    // ============================================================================
 
     YuvFrame::YuvFrame(const VIDEO_FRAME_INFO_S &frame_info, ReleaseCallback release_cb) :
         frame_info_(frame_info), release_cb_(std::move(release_cb)) {
         is_valid_ = (frame_info_.stVFrame.pMbBlk != nullptr);
     }
 
-    YuvFrame::~YuvFrame() {
-        if (is_valid_ && release_cb_ && frame_info_.stVFrame.pMbBlk != nullptr) {
-            release_cb_(&frame_info_);
-        }
-    }
+    YuvFrame::~YuvFrame() { release(); }
 
     YuvFrame::YuvFrame(YuvFrame &&other) noexcept :
         frame_info_(other.frame_info_), release_cb_(std::move(other.release_cb_)), is_valid_(other.is_valid_) {
@@ -36,12 +22,8 @@ namespace rmg {
 
     YuvFrame &YuvFrame::operator=(YuvFrame &&other) noexcept {
         if (this != &other) {
-            // 释放当前帧
-            if (is_valid_ && release_cb_ && frame_info_.stVFrame.pMbBlk != nullptr) {
-                release_cb_(&frame_info_);
-            }
+            release();
 
-            // 转移所有权
             frame_info_ = other.frame_info_;
             release_cb_ = std::move(other.release_cb_);
             is_valid_ = other.is_valid_;
@@ -53,7 +35,7 @@ namespace rmg {
         return *this;
     }
 
-    void *YuvFrame::GetVirAddr() const {
+    void *YuvFrame::data() const {
         if (!is_valid_ || frame_info_.stVFrame.pMbBlk == nullptr) {
             return nullptr;
         }
@@ -65,18 +47,27 @@ namespace rmg {
         return vir_addr;
     }
 
-    uint64_t YuvFrame::GetPhyAddr() const {
+    uint64_t YuvFrame::physical_address() const {
         if (!is_valid_ || frame_info_.stVFrame.pMbBlk == nullptr) {
             return 0;
         }
         return RK_MPI_MB_Handle2PhysAddr(frame_info_.stVFrame.pMbBlk);
     }
 
-    size_t YuvFrame::GetDataSize() const {
+    size_t YuvFrame::size() const {
         if (!is_valid_ || frame_info_.stVFrame.pMbBlk == nullptr) {
             return 0;
         }
         return static_cast<size_t>(RK_MPI_MB_GetSize(frame_info_.stVFrame.pMbBlk));
+    }
+
+    void YuvFrame::release() {
+        if (is_valid_ && release_cb_ && frame_info_.stVFrame.pMbBlk != nullptr) {
+            release_cb_(&frame_info_);
+        }
+        is_valid_ = false;
+        frame_info_.stVFrame.pMbBlk = nullptr;
+        release_cb_ = nullptr;
     }
 
 } // namespace rmg

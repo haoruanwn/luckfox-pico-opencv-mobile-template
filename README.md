@@ -12,13 +12,13 @@
 
 ```text
 src/
-  MediaFrame      move-only 的 YuvFrame RAII 封装
-  SystemManager   RK_MPI_SYS_Init / RK_MPI_SYS_Exit 引用计数守卫
-  MediaModule     临时生命周期基类，后续会被 runtime Node 替换
-  VideoCapture    VI/ISP 摄像头采集封装
+  Frame           move-only 的 YuvFrame RAII 封装
+  runtime/        Result、Error、Node、NodeState、NodeStats
+  sys/            RK MPI / RKAIQ / VI 的薄 RAII 封装
+  nodes/          CameraNode
 
-examples/01_isp_vi_capture/
-  CameraCapture   采集 NV12/YUV 帧，并可保存一帧 .yuv 文件
+examples/camera_capture/
+  CameraCapture   打开 CameraNode，采集一帧 NV12/YUV 并保存为 .yuv 文件
 ```
 
 当前保留的第三方依赖：
@@ -82,7 +82,7 @@ cmake --build build/Debug
 采集示例输出位置：
 
 ```text
-build/Debug/examples/01_isp_vi_capture/CameraCapture
+build/Debug/examples/camera_capture/CameraCapture
 ```
 
 ## 在设备上运行
@@ -90,8 +90,12 @@ build/Debug/examples/01_isp_vi_capture/CameraCapture
 复制二进制到 RV1106 设备后运行：
 
 ```bash
-./CameraCapture -n 5 -s
+killall rkipc
+./CameraCapture /tmp/frame_1920x1080_nv12.yuv
 ```
+
+`rkipc` 是系统默认开机自启的相机服务，会占用 RKAIQ/VI 资源。运行本仓库的
+相机示例前需要先停掉它，否则 ISP 初始化可能会阻塞在 `/tmp/aiq0.lock`。
 
 默认摄像头假设：
 

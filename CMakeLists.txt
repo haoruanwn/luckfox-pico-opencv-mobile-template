@@ -56,6 +56,6 @@ add_subdirectory(${SPDLOG_PATH} spdlog)
 add_subdirectory(src)
 
 # 最小示例程序
-add_subdirectory(examples/01_isp_vi_capture)
+add_subdirectory(examples/camera_capture)
 
 message(STATUS "spdlog compile-time log level: ${SPDLOG_ACTIVE_LEVEL} (0=TRACE, 2=INFO, 6=OFF)")
