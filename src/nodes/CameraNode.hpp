@@ -55,13 +55,13 @@ namespace rmg::nodes {
     private:
         [[nodiscard]] sys::IspConfig isp_config() const;
         [[nodiscard]] sys::ViChannelConfig vi_config() const;
-        void mark_error();
+        void record_error(const Error &error);
 
         CameraConfig config_;
         sys::MpiSystem::Handle mpi_;
         sys::IspDevice isp_;
         sys::ViChannel vi_;
-        std::atomic<runtime::NodeState> state_{runtime::NodeState::kClosed};
+        std::atomic<runtime::NodeState> state_{runtime::NodeState::kCreated};
         runtime::NodeStats stats_;
     };
 

@@ -23,6 +23,17 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "HostDebug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "RMG_BUILD_DEVICE_TARGETS": "OFF",
+        "RMG_BUILD_EXAMPLES": "OFF",
+        "RMG_BUILD_TESTS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -33,6 +44,19 @@
     {
       "name": "Release",
       "configurePreset": "Release"
+    },
+    {
+      "name": "HostDebug",
+      "configurePreset": "HostDebug"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "HostDebug",
+      "configurePreset": "HostDebug",
+      "output": {
+        "outputOnFailure": true
+      }
     }
   ]
 }

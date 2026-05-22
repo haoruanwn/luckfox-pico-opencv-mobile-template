@@ -3,9 +3,12 @@
 namespace rmg::runtime {
 
     enum class NodeState {
+        kCreated,
+        kOpened,
+        kStarted,
+        kStopping,
+        kStopped,
         kClosed,
-        kOpen,
-        kRunning,
         kError,
     };
 

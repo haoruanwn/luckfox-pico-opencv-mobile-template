@@ -4,14 +4,18 @@
 
 namespace rmg::nodes {
 
-    CameraNode::CameraNode(CameraConfig config) :
-        config_(std::move(config)), isp_(isp_config()), vi_(vi_config()) {}
+    CameraNode::CameraNode(CameraConfig config) : config_(std::move(config)), isp_(isp_config()), vi_(vi_config()) {}
 
     CameraNode::~CameraNode() { (void) close(); }
 
     Result<void> CameraNode::open() {
         auto current = state_.load();
-        if (current == runtime::NodeState::kOpen || current == runtime::NodeState::kRunning) {
+        if (current == runtime::NodeState::kOpened || current == runtime::NodeState::kStarted) {
+            return Result<void>::success();
+        }
+
+        if (current == runtime::NodeState::kStopped) {
+            state_.store(runtime::NodeState::kOpened);
             return Result<void>::success();
         }
 
@@ -21,7 +25,7 @@ namespace rmg::nodes {
 
         auto mpi_result = sys::MpiSystem::acquire();
         if (!mpi_result) {
-            mark_error();
+            record_error(mpi_result.error());
             return Result<void>::failure(std::move(mpi_result).error());
         }
         mpi_ = std::move(mpi_result).value();
@@ -29,46 +33,47 @@ namespace rmg::nodes {
         auto isp_result = isp_.open();
         if (!isp_result) {
             (void) close();
-            mark_error();
+            record_error(isp_result.error());
             return isp_result;
         }
 
         auto vi_result = vi_.open();
         if (!vi_result) {
             (void) close();
-            mark_error();
+            record_error(vi_result.error());
             return vi_result;
         }
 
-        state_.store(runtime::NodeState::kOpen);
+        state_.store(runtime::NodeState::kOpened);
         return Result<void>::success();
     }
 
     Result<void> CameraNode::start() {
         auto current = state_.load();
-        if (current == runtime::NodeState::kRunning) {
+        if (current == runtime::NodeState::kStarted) {
             return Result<void>::success();
         }
 
-        if (current != runtime::NodeState::kOpen) {
+        if (current != runtime::NodeState::kOpened && current != runtime::NodeState::kStopped) {
             return Result<void>::failure(
-                Error::invalid_state("CameraNode", "start", "camera must be open before start"));
+                    Error::invalid_state("CameraNode", "start", "camera must be open before start"));
         }
 
-        state_.store(runtime::NodeState::kRunning);
+        state_.store(runtime::NodeState::kStarted);
         return Result<void>::success();
     }
 
     Result<void> CameraNode::stop() {
         auto current = state_.load();
-        if (current == runtime::NodeState::kRunning) {
-            state_.store(runtime::NodeState::kOpen);
+        if (current == runtime::NodeState::kStarted) {
+            state_.store(runtime::NodeState::kStopping);
+            state_.store(runtime::NodeState::kStopped);
         }
         return Result<void>::success();
     }
 
     Result<void> CameraNode::close() {
-        if (state_.load() == runtime::NodeState::kRunning) {
+        if (state_.load() == runtime::NodeState::kStarted) {
             (void) stop();
         }
 
@@ -81,13 +86,14 @@ namespace rmg::nodes {
     }
 
     Result<YuvFrame> CameraNode::read_frame(int timeout_ms) {
-        if (state_.load() != runtime::NodeState::kRunning) {
+        if (state_.load() != runtime::NodeState::kStarted) {
             return Result<YuvFrame>::failure(
-                Error::invalid_state("CameraNode", "read_frame", "camera must be running before reading frames"));
+                    Error::invalid_state("CameraNode", "read_frame", "camera must be running before reading frames"));
         }
 
         auto frame_result = vi_.read_frame(timeout_ms);
         if (!frame_result) {
+            stats_.last_error = frame_result.error();
             if (frame_result.error().code == ErrorCode::kTimeout) {
                 ++stats_.timeouts;
             } else {
@@ -97,6 +103,7 @@ namespace rmg::nodes {
         }
 
         ++stats_.frames_read;
+        ++stats_.frames_out;
         return frame_result;
     }
 
@@ -129,8 +136,9 @@ namespace rmg::nodes {
         return config;
     }
 
-    void CameraNode::mark_error() {
+    void CameraNode::record_error(const Error &error) {
         ++stats_.errors;
+        stats_.last_error = error;
         state_.store(runtime::NodeState::kError);
     }
 

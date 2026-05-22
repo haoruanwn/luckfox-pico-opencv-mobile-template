@@ -6,6 +6,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
+option(RMG_BUILD_DEVICE_TARGETS "Build RK MPI-backed runtime library and examples" ON)
+option(RMG_BUILD_EXAMPLES "Build example programs" ON)
+option(RMG_BUILD_TESTS "Build runtime tests" OFF)
+
 # 当编译选项为Debug时，启用调试符号
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 
@@ -34,7 +38,7 @@ set(SPDLOG_PATH ${CMAKE_SOURCE_DIR}/3rdparty/spdlog)
 # MPI 库列表（取自 luckfox-pico-rkmpi-example）
 # 当前 reset 只保留相机采集底座；后续恢复 VENC/RTSP 时再补充对应库。
 # ========================================
-set(MPI_LIBS 
+set(MPI_LIBS
     sample_comm
     rockit
     rockchip_mpp
@@ -47,15 +51,26 @@ set(MPI_LIBS
 # ========================================
 # spdlog 配置
 # ========================================
+find_package(Threads REQUIRED)
 add_subdirectory(${SPDLOG_PATH} spdlog)
 
 # ========================================
 # 添加子目录
 # ========================================
-# 源码
-add_subdirectory(src)
+if(RMG_BUILD_DEVICE_TARGETS)
+    # 源码
+    add_subdirectory(src)
 
-# 最小示例程序
-add_subdirectory(examples/camera_capture)
+    if(RMG_BUILD_EXAMPLES)
+        # 最小示例程序
+        add_subdirectory(examples/camera_capture)
+        add_subdirectory(examples/camera_runtime_smoke)
+    endif()
+endif()
+
+if(RMG_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests/runtime_tests)
+endif()
 
 message(STATUS "spdlog compile-time log level: ${SPDLOG_ACTIVE_LEVEL} (0=TRACE, 2=INFO, 6=OFF)")

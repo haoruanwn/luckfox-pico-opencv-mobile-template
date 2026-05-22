@@ -14,11 +14,14 @@ set(RMG_HEADERS
     rmg.hpp
     Frame.hpp
     nodes/CameraNode.hpp
+    runtime/BoundedQueue.hpp
+    runtime/Cancellation.hpp
     runtime/Error.hpp
     runtime/Node.hpp
     runtime/NodeState.hpp
     runtime/NodeStats.hpp
     runtime/Result.hpp
+    runtime/WorkerThread.hpp
     sys/IspDevice.hpp
     sys/MpiSystem.hpp
     sys/ViChannel.hpp
@@ -48,7 +51,7 @@ target_link_directories(rmg PUBLIC
 )
 
 # 链接 spdlog
-target_link_libraries(rmg PUBLIC spdlog::spdlog)
+target_link_libraries(rmg PUBLIC spdlog::spdlog Threads::Threads)
 
 # C++17 特性
 target_compile_features(rmg PUBLIC cxx_std_17)
