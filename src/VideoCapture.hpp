@@ -21,7 +21,6 @@
 #include <thread>
 
 #include "MediaModule.hpp"
-#include "Pipeline.hpp"
 #include "SystemManager.hpp"
 
 // Rockchip MPI headers
@@ -99,11 +98,6 @@ namespace rmg {
          * @param callback 回调函数，接收 YuvFrame 的右值引用
          */
         void SetYuvFrameCallback(YuvFrameCallback callback) { yuv_callback_ = std::move(callback); }
-
-        /**
-         * @brief 获取模块端点（用于硬件绑定）
-         */
-        [[nodiscard]] ModuleEndpoint GetEndpoint() const;
 
         /**
          * @brief 获取当前帧率

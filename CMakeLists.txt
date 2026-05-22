@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(luckfox-pico-ipc-examples)
+project(rv1106-vision-runtime)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -27,11 +27,12 @@ set(SPDLOG_ACTIVE_LEVEL "2" CACHE STRING "Compile-time log level (0=TRACE, 6=OFF
 # ========================================
 # 第三方库路径
 # ========================================
-set(LUCKFOX_MPI_PATH ${CMAKE_SOURCE_DIR}/third_party/luckfox_pico_rkmpi_example)
-set(SPDLOG_PATH ${CMAKE_SOURCE_DIR}/third_party/spdlog)
+set(LUCKFOX_MPI_PATH ${CMAKE_SOURCE_DIR}/3rdparty/luckfox_pico_rkmpi_example)
+set(SPDLOG_PATH ${CMAKE_SOURCE_DIR}/3rdparty/spdlog)
 
 # ========================================
-# MPI 库列表 （取自 luckfox-pico-rkmpi-example）
+# MPI 库列表（取自 luckfox-pico-rkmpi-example）
+# 当前 reset 只保留相机采集底座；后续恢复 VENC/RTSP 时再补充对应库。
 # ========================================
 set(MPI_LIBS 
     sample_comm
@@ -39,7 +40,6 @@ set(MPI_LIBS
     rockchip_mpp
     rkaiq
     rga
-    rtsp
     pthread
     dl
 )
@@ -52,13 +52,10 @@ add_subdirectory(${SPDLOG_PATH} spdlog)
 # ========================================
 # 添加子目录
 # ========================================
-# 公共库
-add_subdirectory(common)
+# 源码
+add_subdirectory(src)
 
-# 示例程序
-add_subdirectory(01_isp_vi_capture)
-add_subdirectory(02_jpeg_capture)
-add_subdirectory(03_h264_record)
-add_subdirectory(04_vi_venc_rtsp)
+# 最小示例程序
+add_subdirectory(examples/01_isp_vi_capture)
 
 message(STATUS "spdlog compile-time log level: ${SPDLOG_ACTIVE_LEVEL} (0=TRACE, 2=INFO, 6=OFF)")

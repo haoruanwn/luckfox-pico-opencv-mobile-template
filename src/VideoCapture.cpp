@@ -16,8 +16,7 @@
 
 namespace rmg {
 
-    VideoCapture::VideoCapture(const Config &config) :
-        MediaModule("VideoCapture", ModuleType::kSource), config_(config) {}
+    VideoCapture::VideoCapture(const Config &config) : MediaModule("VideoCapture"), config_(config) {}
 
     VideoCapture::~VideoCapture() {
         Stop();
@@ -136,14 +135,6 @@ namespace rmg {
         };
 
         return YuvFrame(frame_info, release_cb);
-    }
-
-    ModuleEndpoint VideoCapture::GetEndpoint() const {
-        return ModuleEndpoint{
-                .mod_id = RK_ID_VI,
-                .dev_id = static_cast<int32_t>(config_.pipe_id),
-                .chn_id = static_cast<int32_t>(config_.chn_id),
-        };
     }
 
     uint32_t VideoCapture::GetCurrentFps() const {

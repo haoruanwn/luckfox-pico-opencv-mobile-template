@@ -1,6 +1,18 @@
 该例程实现：
 驱动CSI摄像头，利用RK的库，实现经过ISP采集原始YUV帧
 
+源码位置：
+
+```text
+examples/01_isp_vi_capture
+```
+
+构建输出：
+
+```text
+build/Debug/examples/01_isp_vi_capture/CameraCapture
+```
+
 初始化后延时，等待AE收敛
 跳过前面的热身帧，只保留后面的正常帧
 
