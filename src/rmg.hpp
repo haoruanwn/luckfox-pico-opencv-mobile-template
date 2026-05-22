@@ -2,6 +2,7 @@
 
 #include "Frame.hpp"
 #include "nodes/CameraNode.hpp"
+#include "nodes/RgaNode.hpp"
 #include "runtime/BoundedQueue.hpp"
 #include "runtime/Cancellation.hpp"
 #include "runtime/Error.hpp"

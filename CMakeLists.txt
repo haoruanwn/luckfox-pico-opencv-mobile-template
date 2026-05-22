@@ -65,6 +65,7 @@ if(RMG_BUILD_DEVICE_TARGETS)
         # 最小示例程序
         add_subdirectory(examples/camera_capture)
         add_subdirectory(examples/camera_runtime_smoke)
+        add_subdirectory(examples/camera_rga_smoke)
     endif()
 endif()
 

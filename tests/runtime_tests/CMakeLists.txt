@@ -2,6 +2,7 @@ add_executable(runtime_tests runtime_tests.cpp)
 
 target_include_directories(runtime_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/src
+    ${LUCKFOX_MPI_PATH}/include
 )
 
 target_link_libraries(runtime_tests PRIVATE Threads::Threads)

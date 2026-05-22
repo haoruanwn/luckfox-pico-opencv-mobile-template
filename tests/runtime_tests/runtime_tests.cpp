@@ -3,7 +3,10 @@
 #include <chrono>
 #include <memory>
 #include <thread>
+#include <type_traits>
 
+#include "Frame.hpp"
+#include "nodes/RgaNode.hpp"
 #include "runtime/BoundedQueue.hpp"
 #include "runtime/Cancellation.hpp"
 #include "runtime/Node.hpp"
@@ -13,7 +16,11 @@ namespace {
 
     using rmg::Error;
     using rmg::ErrorCode;
+    using rmg::ImageFrame;
     using rmg::Result;
+    using rmg::nodes::CropRect;
+    using rmg::nodes::RgaNode;
+    using rmg::nodes::RgaTransform;
     using rmg::runtime::BoundedQueue;
     using rmg::runtime::CancellationSource;
     using rmg::runtime::Node;
@@ -142,6 +149,63 @@ namespace {
         auto item = queue.pop();
         assert(item);
         assert(*item.value() == 42);
+    }
+
+    void test_image_frame_move_only_contract() {
+        static_assert(!std::is_copy_constructible<ImageFrame>::value, "ImageFrame must be move-only");
+        static_assert(!std::is_copy_assignable<ImageFrame>::value, "ImageFrame must be move-only");
+        static_assert(std::is_move_constructible<ImageFrame>::value, "ImageFrame must be movable");
+        static_assert(std::is_move_assignable<ImageFrame>::value, "ImageFrame must be movable");
+
+        ImageFrame empty;
+        assert(!empty.valid());
+        assert(empty.width() == 0);
+        assert(empty.height() == 0);
+        assert(empty.virtual_width() == 0);
+        assert(empty.virtual_height() == 0);
+        assert(empty.pts() == 0);
+    }
+
+    void test_rga_transform_validation() {
+        RgaTransform valid;
+        valid.dst_width = 640;
+        valid.dst_height = 360;
+        valid.dst_format = RK_FMT_YUV420SP;
+        assert(RgaNode::validate_transform_parameters(1920, 1080, RK_FMT_YUV420SP, valid));
+
+        RgaTransform rgb = valid;
+        rgb.dst_format = RK_FMT_RGB888;
+        assert(RgaNode::validate_transform_parameters(1920, 1080, RK_FMT_YUV420SP, rgb));
+
+        RgaTransform zero = valid;
+        zero.dst_width = 0;
+        auto zero_result = RgaNode::validate_transform_parameters(1920, 1080, RK_FMT_YUV420SP, zero);
+        assert(!zero_result);
+        assert(zero_result.error().code == ErrorCode::kInvalidArgument);
+
+        RgaTransform odd = valid;
+        odd.dst_width = 641;
+        assert(!RgaNode::validate_transform_parameters(1920, 1080, RK_FMT_YUV420SP, odd));
+
+        auto unsupported_input = RgaNode::validate_transform_parameters(1920, 1080, RK_FMT_RGB888, valid);
+        assert(!unsupported_input);
+        assert(unsupported_input.error().code == ErrorCode::kInvalidArgument);
+
+        RgaTransform unsupported_output = valid;
+        unsupported_output.dst_format = RK_FMT_BGR888;
+        assert(!RgaNode::validate_transform_parameters(1920, 1080, RK_FMT_YUV420SP, unsupported_output));
+
+        RgaTransform crop = valid;
+        crop.crop = CropRect{2, 4, 320, 180};
+        assert(RgaNode::validate_transform_parameters(1920, 1080, RK_FMT_YUV420SP, crop));
+
+        RgaTransform odd_crop = valid;
+        odd_crop.crop = CropRect{1, 4, 320, 180};
+        assert(!RgaNode::validate_transform_parameters(1920, 1080, RK_FMT_YUV420SP, odd_crop));
+
+        RgaTransform out_of_bounds = valid;
+        out_of_bounds.crop = CropRect{1800, 0, 200, 180};
+        assert(!RgaNode::validate_transform_parameters(1920, 1080, RK_FMT_YUV420SP, out_of_bounds));
     }
 
     void test_queue_close_wakes() {
@@ -324,6 +388,8 @@ int main() {
     test_queue_close_wakes();
     test_queue_cancel_wakes();
     test_queue_block_policy();
+    test_image_frame_move_only_contract();
+    test_rga_transform_validation();
     test_worker_thread_success();
     test_worker_thread_cancel();
     test_worker_thread_error_and_timeout();

@@ -70,4 +70,32 @@ namespace rmg {
         release_cb_ = nullptr;
     }
 
+    void *ImageFrame::data() const {
+        if (!is_valid_ || mb_ == nullptr) {
+            return nullptr;
+        }
+        return RK_MPI_MB_Handle2VirAddr(mb_);
+    }
+
+    uint64_t ImageFrame::physical_address() const {
+        if (!is_valid_ || mb_ == nullptr) {
+            return 0;
+        }
+        return RK_MPI_MB_Handle2PhysAddr(mb_);
+    }
+
+    int ImageFrame::fd() const {
+        if (!is_valid_ || mb_ == nullptr) {
+            return -1;
+        }
+        return static_cast<int>(RK_MPI_MB_Handle2Fd(mb_));
+    }
+
+    size_t ImageFrame::size() const {
+        if (!is_valid_ || mb_ == nullptr) {
+            return 0;
+        }
+        return static_cast<size_t>(RK_MPI_MB_GetSize(mb_));
+    }
+
 } // namespace rmg

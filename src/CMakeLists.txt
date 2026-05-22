@@ -5,6 +5,7 @@
 set(RMG_SOURCES
     Frame.cpp
     nodes/CameraNode.cpp
+    nodes/RgaNode.cpp
     sys/IspDevice.cpp
     sys/MpiSystem.cpp
     sys/ViChannel.cpp
@@ -14,6 +15,7 @@ set(RMG_HEADERS
     rmg.hpp
     Frame.hpp
     nodes/CameraNode.hpp
+    nodes/RgaNode.hpp
     runtime/BoundedQueue.hpp
     runtime/Cancellation.hpp
     runtime/Error.hpp
