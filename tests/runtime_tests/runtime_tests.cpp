@@ -26,6 +26,11 @@ namespace {
         assert(result);
         assert(result.value() == 5);
 
+        const auto const_result = Result<int>::success(4);
+        auto const_chain = const_result.and_then([](const int &value) { return Result<int>::success(value * 2); });
+        assert(const_chain);
+        assert(const_chain.value() == 8);
+
         bool called = false;
         auto failed = Result<int>::failure(Error::invalid_state("test", "first", "failed")).and_then([&](int) {
             called = true;
@@ -39,6 +44,48 @@ namespace {
                              .and_then([](std::unique_ptr<int> value) { return Result<int>::success(*value); });
         assert(moved);
         assert(moved.value() == 9);
+    }
+
+    void test_result_error_helpers() {
+        auto recovered =
+                Result<int>::failure(Error::invalid_state("test", "recover", "failed")).or_else([](Error &&error) {
+                    assert(error.code == ErrorCode::kInvalidState);
+                    return Result<int>::success(11);
+                });
+        assert(recovered);
+        assert(recovered.value() == 11);
+
+        auto move_only = Result<std::unique_ptr<int>>::success(std::make_unique<int>(5));
+        auto still_ok = std::move(move_only).or_else(
+                [](Error &&) { return Result<std::unique_ptr<int>>::success(std::make_unique<int>(0)); });
+        assert(still_ok);
+        assert(*still_ok.value() == 5);
+
+        bool called = false;
+        auto ok_void = Result<void>::success();
+        auto still_success = ok_void.or_else([&](Error &) {
+            called = true;
+            return Result<void>::failure(Error::unavailable("test", "or_else", "should not run"));
+        });
+        assert(still_success);
+        assert(!called);
+
+        auto recovered_void =
+                Result<void>::failure(Error::cancelled("test", "void", "cancelled")).or_else([](Error &&error) {
+                    assert(error.code == ErrorCode::kCancelled);
+                    return Result<void>::success();
+                });
+        assert(recovered_void);
+
+        auto mutable_error = Result<void>::failure(Error::unavailable("test", "error", "original"));
+        mutable_error.error().message = "updated";
+        assert(mutable_error.error().message == "updated");
+
+        auto fallback = Error::unavailable("test", "fallback", "fallback");
+        assert(Result<void>::success().error_or(fallback).message == "fallback");
+        auto stored = Result<void>::failure(Error::queue_closed("test", "stored", "stored")).error_or(fallback);
+        assert(stored.code == ErrorCode::kQueueClosed);
+        assert(stored.message == "stored");
     }
 
     void test_cancellation_token() {
@@ -268,6 +315,7 @@ namespace {
 
 int main() {
     test_result_and_then();
+    test_result_error_helpers();
     test_cancellation_token();
     test_queue_drop_newest();
     test_queue_drop_oldest();
